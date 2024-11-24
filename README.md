@@ -44,14 +44,14 @@ export class PeliculaService {
 
 El servicio `PeliculaService` utiliza Angular para interactuar con la API de **The Movie Database (TMDb)** y obtener la lista de películas actualmente en cartelera.
 
-### 📋 Funcionalidad
+### Funcionalidad
 - Método `getNowPlaying(language: string, page: number)`:  
   Realiza una solicitud `GET` a la URL `https://api.themoviedb.org/3/movie/now_playing` con los siguientes parámetros:
   - **`language`**: Idioma de los resultados (por defecto: `es-ES`).
   - **`page`**: Número de página para paginación (por defecto: `1`).
   - **`api_key`**: Clave de autenticación para acceder a la API.
 
-### 🛠️ Implementación
+### Implementación
 1. **HTTP Client**: Utiliza el servicio `HttpClient` de Angular para realizar solicitudes.
 2. **Parámetros**: Usa `HttpParams` para construir los parámetros de consulta dinámicamente.
 3. **Respuesta**: Devuelve un `Observable` con los datos proporcionados por TMDb.
@@ -188,7 +188,7 @@ export class TablaPeliculasComponent implements OnInit, AfterViewInit {
 
 Componente Angular para gestionar una tabla interactiva de películas, integrando funcionalidades de búsqueda, paginación, ordenamiento, y acciones como editar, eliminar y ver detalles.
 
-### ✨ Características
+### Características
 - **Búsqueda**: Filtra películas por nombre utilizando un input.
 - **Paginar y Ordenar**: Implementado con `MatPaginator` y `MatSort`.
 - **Acciones**:
@@ -196,7 +196,7 @@ Componente Angular para gestionar una tabla interactiva de películas, integrand
   - `editar`: Permite editar los datos de una película.
   - `eliminar`: Confirma y elimina una película de la lista con `SweetAlert2`.
 
-### 🧩 Código Principal
+### Código Principal
 - **Métodos Clave**:
   - `obtenerPeliculas()`: Consume la API de TMDb para obtener películas en cartelera.
   - `applyFilter()`: Aplica el filtro de búsqueda en la tabla.
@@ -274,13 +274,13 @@ Componente Angular para gestionar una tabla interactiva de películas, integrand
 
 Este componente presenta una tabla interactiva para mostrar una lista de películas utilizando Angular Material. Incluye funcionalidades como filtros, paginación, ordenamiento y acciones para cada elemento.
 
-### ✨ Características
+### Características
 - **Búsqueda**: Campo de texto para filtrar películas por nombre.
 - **Ordenamiento**: Ordena las columnas utilizando el encabezado interactivo.
 - **Paginar**: Control de paginación con opciones configurables de tamaño de página.
 - **Acciones**: Botones para realizar acciones (ver detalles, editar, eliminar) en cada película.
 
-### 🧩 Estructura del Código
+### Estructura del Código
 - **Campo de Búsqueda**:  
   Usa un `<mat-form-field>` con un input que activa el método `applyFilter()` al presionar una tecla.
   
@@ -376,7 +376,7 @@ export class DashboardComponent implements OnInit{
 
 El componente `DashboardComponent` proporciona la estructura principal para el panel de control de la aplicación. Incluye una barra de herramientas, un menú lateral y funcionalidades relacionadas con la sesión del usuario.
 
-### ✨ Características
+### Características
 - **Visualización del Usuario**:
   - Muestra información del usuario logeado, como el avatar y el nombre.
 
@@ -388,7 +388,7 @@ El componente `DashboardComponent` proporciona la estructura principal para el p
   - Utiliza `Router` para manejar la navegación entre vistas.
   - Soporta rutas declaradas mediante `RouterLink`.
 
-### 📄 Descripción de Funcionalidades
+### Descripción de Funcionalidades
 1. **Inicialización (`ngOnInit`)**:
    - Obtiene el usuario logeado desde el servicio `UsuarioLoggedService` y carga su información.
    - Imprime la URL del avatar en la consola para depuración.
@@ -451,7 +451,7 @@ El componente `DashboardComponent` proporciona la estructura principal para el p
 
 Este código implementa un menú lateral (drawer) y una barra superior fija utilizando Angular Material. Proporciona una interfaz de navegación clara y funcional para una aplicación web.
 
-### ✨ Características
+### Características
 - **Barra Superior (`mat-toolbar`)**:
   - Botón para abrir/cerrar el menú lateral.
   - Muestra un avatar del usuario (dinámico) obtenido del servicio `logeadoService`.
@@ -465,7 +465,7 @@ Este código implementa un menú lateral (drawer) y una barra superior fija util
 - **Área de Contenido (`mat-drawer-content`)**:
   - Renderiza vistas dinámicamente con `router-outlet`.
 
-### 📄 Estructura Principal
+### Estructura Principal
 - **Toolbar Superior**:
   - **Botón Menú**: Abre o cierra el menú lateral.
   - **Avatar**: Muestra el avatar del usuario logeado.
@@ -493,12 +493,12 @@ Este código implementa un menú lateral (drawer) y una barra superior fija util
 
 <div align='center'>
     <img  src="src/assets/img-reporte/img3.png" width="80%">
-    <p>Modal para poder observar los detalles de la pelicula</p>
+    <p>Modal para observar los detalles de la pelicula</p>
 </div>
 
 <div align='center'>
     <img  src="src/assets/img-reporte/img4.png" width="80%">
-    <p>Modal para poder editar los detalles de la pelicula</p>
+    <p>Modal para editar los detalles de la pelicula</p>
 </div>
 
 <div align='center'>
