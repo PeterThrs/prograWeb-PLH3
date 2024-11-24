@@ -1,0 +1,61 @@
+<div class="container">
+    <h2>Lista de Peliculas</h2>
+    <mat-form-field appearance="outline">
+      <mat-label>Filtro</mat-label>
+      <input matInput (keyup)="applyFilter($event)" placeholder="Ingrese su busqueda" #input >
+    </mat-form-field>
+  
+    <div class="mat-elevation-z8">
+      <table mat-table [dataSource]="dataSource" class="table-striped table-bordered " matSort>
+        <!-- Position Column -->
+        <ng-container matColumnDef="numero">
+            <th mat-header-cell *matHeaderCellDef>No</th>
+            <td mat-cell *matCellDef="let movie; let i = index">
+              {{ i + 1 + (paginator.pageIndex * paginator.pageSize) }}
+            </td>
+          </ng-container>
+  
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+          <td mat-cell *matCellDef="let movie">{{ movie.titulo }}</td>
+        </ng-container>
+  
+        <!-- Name Column -->
+        <ng-container matColumnDef="poster">
+          <th mat-header-cell *matHeaderCellDef>Poster</th>
+          <td mat-cell *matCellDef="let movie">
+            <img [src]="'https://image.tmdb.org/t/p/w500' + movie.imagenPoster" alt="{{ movie.titulo }}" style="height: 100px; width: auto;">
+          </td>
+        </ng-container>
+  
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="accion">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let movie" class="acciones-cell">
+            <button mat-icon-button color="primary" (click)="masDetalles(movie)" class="boton-accion">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" (click)="editar(movie)" class="boton-accion">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="eliminar(movie)" class="boton-accion">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+          
+  
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+  
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 20]"
+        showFirstLastButtons
+        aria-label="Select page of periodic movies"
+      >
+      </mat-paginator>
+    </div>
+  </div>
+  

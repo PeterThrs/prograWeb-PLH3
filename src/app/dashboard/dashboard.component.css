@@ -1,0 +1,112 @@
+/* Contenedor principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Altura completa de la ventana */
+}
+/* Toolbar fijo */
+.fixed-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px; /* Altura estándar del toolbar */
+  z-index: 1000;
+  background-color: #f5f5f5; /* Color de fondo opcional */
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra discreta */
+}
+
+/* Contenedor del layout (drawer y contenido) */
+.drawer-container {
+  display: flex;
+  flex: 1;
+  margin-top: 64px; /* Desplaza por debajo del toolbar */
+  height: calc(100vh - 64px); /* Ajusta al espacio restante */
+}
+
+/* Barra lateral */
+.example-sidenav {
+  width: 200px; /* Ancho fijo de la barra lateral */
+  background-color: #f5f5f5; /* Fondo claro */
+  padding: 16px; /* Espaciado interno */
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1); /* Sombra para separación */
+}
+
+.example-sidenav button {
+  display: block;
+}
+
+mat-drawer-content {
+  width: 100vw !important;
+  background-color: white;
+}
+
+/* Contenido principal */
+.example-sidenav-content {
+  flex-grow: 1; /* Ocupa todo el espacio restante */
+  padding: 16px; /* Espaciado interno */
+  background-color: #fff; /* Fondo blanco */
+  box-sizing: border-box; /* Incluye padding en el cálculo del ancho */
+  
+}
+
+/* Avatar (imagen circular) */
+.avatar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  width: 100px;
+  overflow: hidden; /* Oculta el exceso de la imagen */
+  border-radius: 50%; /* Hace que sea circular */
+  border: 2px solid #ddd; /* Borde opcional */
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ajusta la imagen sin distorsionarla */
+}
+
+/* Espaciador flexible */
+.spacer {
+  flex-grow: 1;
+}
+
+/* Tarjeta de bienvenida */
+.welcome-section {
+  text-align: center;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.welcome-message {
+  font-size: 14px;
+  color: #333;
+  margin: 0;
+}
+
+.welcome-message span {
+  font-weight: bold;
+  color: #0056b3;
+}
+
+/* Acciones en las tarjetas */
+mat-card-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Asegura que las imágenes sean responsivas */
+img {
+  max-width: 100%;
+  height: auto;
+}

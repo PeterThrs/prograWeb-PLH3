@@ -1,0 +1,72 @@
+.modal-container {
+    text-align: center;
+    padding: 0;
+  }
+  
+  .modal-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px; /* Ajusta según lo necesites */
+    object-fit: cover; /* Mantiene la proporción y recorta si es necesario */
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+  }
+
+  h2 {
+    background-color: #272838;
+    color: white;
+  }
+
+  ::ng-deep .mat-mdc-dialog-container .mat-mdc-dialog-title {
+    color: white;
+  }
+
+  ::ng-deep .mat-mdc-dialog-container .mat-mdc-dialog-title+.mat-mdc-dialog-content{
+    padding-top: 20px;
+  }
+  
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: gray;
+  }
+
+  form {
+    margin: 20px;
+  }
+
+  
+  mat-card {
+    margin: 16px;
+  }
+  
+  mat-form-field {
+    width: 100%;
+    margin-bottom: 0px;
+    background-color: white;
+  }
+
+  .mdc-text-field--filled:not(.mdc-text-field--disabled){
+    background-color: none;
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+  
+  button {
+    margin: 8px 0;
+  }
+  

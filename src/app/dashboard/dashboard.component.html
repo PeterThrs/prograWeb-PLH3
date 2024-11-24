@@ -1,0 +1,39 @@
+<div class="container">
+  <mat-toolbar color="primary" class="fixed-toolbar">
+    <button mat-icon-button (click)="drawer.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span>Inicio</span>
+    <span class="spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu" class="avatar-button">
+      <img
+        alt="avatar"
+        [src]="logeadoService.getUsuario()?.avatar || 'assets/default-avatar.png'"
+        class="avatar"
+      />
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="salir()">Salir</button>
+    </mat-menu>
+  </mat-toolbar>
+
+  <mat-drawer-container class="drawer-container">
+    <mat-drawer #drawer class="example-sidenav" mode="side">
+      <div class="welcome-section">
+        <p class="welcome-message">
+          Bienvenido, <span>{{ logeadoService.getUsuario()?.name }}</span>
+        </p>
+      </div>
+      <p>Menú</p>
+      <button mat-button routerLink="usuarios">Usuarios</button>
+      <button mat-button routerLink="peliculas">Películas</button>
+      <button mat-button (click)="salir()">Salir</button>
+    </mat-drawer>
+
+    <mat-drawer-content>
+      <div class="example-sidenav-content">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-drawer-content>
+  </mat-drawer-container>
+</div>

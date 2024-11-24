@@ -1,0 +1,80 @@
+table {
+    width: 100%;
+  }
+  
+  .mat-mdc-form-field {
+    font-size: 14px;
+    width: 100%;
+  }
+  
+  .container {
+    max-width: 80%;
+    margin: 0px auto;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    text-align: center;
+    color: #333;
+    font-weight: bold;
+    font-size: 1.5em;
+    margin-bottom: 20px;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  table th {
+    background-color: #51295b;
+    color: white;
+    font-weight: 400;
+    text-align: center;
+    padding: 10px;
+  }
+  
+  table  td {
+    padding: 9px;
+    text-align: center;
+  }
+  
+  table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  table tr:hover {
+    background-color: #bf9edc8f;
+  }
+  
+  .table-bordered td, .table-bordered th {
+    border: 1px solid #ddd;
+  }
+
+  .acciones-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 8px; 
+    padding: 0; 
+  }
+  
+  .boton-accion {
+    margin: 0; /* Elimina márgenes adicionales */
+    padding: 4px; /* Reduce espacio interno para evitar que se agrande demasiado */
+    border-radius: 4px; /* Bordes redondeados ligeros */
+    font-size: 16px; /* Tamaño de icono */
+    box-shadow: none; /* Evita sombras que parezcan separar elementos */
+    transition: background-color 0.2s ease;
+  
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1); /* Efecto hover más sutil */
+    }
+  }
+  
+  
+  
