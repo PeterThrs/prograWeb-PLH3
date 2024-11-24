@@ -3,10 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { TablaPeliculasComponent } from './tabla-peliculas/tabla-peliculas.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ModalComponent } from './modal/modal.component';
-import { GuardarLocalService } from '../services/guardar-local.service';
 import Swal from 'sweetalert2';
 import { MatMenuModule } from '@angular/material/menu';
 import { UsuarioLoggedService } from '../services/usuario-logged.service';
@@ -71,7 +68,5 @@ export class DashboardComponent implements OnInit{
 
     
   }
-
-  
 
 }

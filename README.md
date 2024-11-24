@@ -1,195 +1,507 @@
-# Consumo de APIs en Angular
+# Proyecto de Consumo de API de TMDb 🎬
 
-Se utiliza la API pública: https://api.escuelajs.co/api/v1/users
+Este proyecto consume la API pública de **The Movie Database (TMDb)**. Permite a los usuarios explorar datos relacionados con películas, series y actores utilizando la API Key proporcionada por TMDb.
+
+``` link
+https://developer.themoviedb.org/docs/getting-started
+```
+
+## Características
+
+- Buscar información sobre películas, series y actores.
+- Explorar las películas más populares o las tendencias actuales.
+- Detalles completos sobre una película, como sinopsis, elenco y puntuación.
+- Fácil de configurar y usar con cualquier API Key válida de TMDb.
+
+## Servicio: PeliculaService
+
+```typescript
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PeliculaService {
+
+  private baseUrl: string = 'https://api.themoviedb.org/3/movie/now_playing';
+  private apiKey: string = '8b20d78728b45c912d0ecf5d761b98d4';
+
+  constructor(private http: HttpClient) {}
+
+  getNowPlaying(language: string = 'es-ES', page: number = 1): Observable<any> {
+    const params = new HttpParams()
+      .set('language', language)
+      .set('page', page.toString())
+      .set('api_key', this.apiKey);
+
+    return this.http.get(this.baseUrl, { params });
+  }
+
+}
+```
+
+El servicio `PeliculaService` utiliza Angular para interactuar con la API de **The Movie Database (TMDb)** y obtener la lista de películas actualmente en cartelera.
+
+### 📋 Funcionalidad
+- Método `getNowPlaying(language: string, page: number)`:  
+  Realiza una solicitud `GET` a la URL `https://api.themoviedb.org/3/movie/now_playing` con los siguientes parámetros:
+  - **`language`**: Idioma de los resultados (por defecto: `es-ES`).
+  - **`page`**: Número de página para paginación (por defecto: `1`).
+  - **`api_key`**: Clave de autenticación para acceder a la API.
+
+### 🛠️ Implementación
+1. **HTTP Client**: Utiliza el servicio `HttpClient` de Angular para realizar solicitudes.
+2. **Parámetros**: Usa `HttpParams` para construir los parámetros de consulta dinámicamente.
+3. **Respuesta**: Devuelve un `Observable` con los datos proporcionados por TMDb.
 
 
-## Servicio para consumir el API
-<div align='center'>
-    <img  src="src/assets/img-reporte/img1.png" width="50%">
-    <p>Codigo para conosumir el api</p>
+## TablaPeliculasComponent
+
+``` Typescript 
+@Component({
+  selector: 'app-tabla-peliculas',
+  standalone: true,
+  imports: [
+    MatTableModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIcon,
+    MatSortModule
+  ],
+  templateUrl: './tabla-peliculas.component.html',
+  styleUrl: './tabla-peliculas.component.css'
+})
+export class TablaPeliculasComponent implements OnInit, AfterViewInit {
+
+  peliculas: Pelicula[] = [];
+  peliculasEliminadas: Pelicula[] = [];
+  displayedColumns: string[] = ['numero', 'nombre', 'poster', 'accion'];
+  dataSource = new MatTableDataSource<Pelicula>();
+
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort;
+
+  constructor(private peliculaService: PeliculaService,
+    private localService: GuardarLocalService
+  ) { }
+
+  ngOnInit(): void {
+    this.dataSource.filterPredicate = (data: Pelicula, filter: string) => {
+      return data.titulo.toLowerCase().includes(filter.trim().toLowerCase());
+    };
+    this.obtenerPeliculas();
+  }
+
+  obtenerPeliculas(){
+    this.peliculaService.getNowPlaying().pipe(
+      map(response => response.results.map((data: any) => new Pelicula(data)))
+    ).subscribe({
+      next: (datos) => {
+        this.peliculas = datos;
+        this.dataSource.data = this.peliculas;
+        console.log(this.peliculas);
+        //this.actualizarContenido();
+      },
+      error: (errores) => {
+        console.log(errores);
+      }
+    });
+  }
+
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  readonly dialog = inject(MatDialog);
+
+  masDetalles(pelicula: Pelicula) {
+    let edicion: boolean = false;
+    const dialogRef = this.dialog.open(ModalComponent, {
+      width: '600px',
+      data: { pelicula, edicion }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`);
+    });
+  }
+
+  editar(pelicula: Pelicula) {
+    let edicion: boolean = true;
+    const dialogRef = this.dialog.open(ModalComponent, {
+      width: '600px',
+      data: { pelicula, edicion }
+    });
+
+    dialogRef.afterClosed().subscribe((peliculaActualizada: Pelicula | undefined) => {
+      console.log(`Dialog result: ${peliculaActualizada}`);
+      if (peliculaActualizada) {
+        const index = this.peliculas.findIndex(p => p.id === peliculaActualizada.id);
+        this.peliculas[index] = peliculaActualizada;
+      }
+      console.log(this.peliculas);
+      this.dataSource.data = this.peliculas;
+    });
+  }
+
+  eliminar(pelicula: Pelicula) {
+    Swal.fire({
+      title: "¿Estas Seguro?",
+      text: "¡No podras Revertir la accion!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "¡Si, eliminar!",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "¡Eliminado!",
+          text: "El elemento fue borrado.",
+          icon: "success"
+        });
+        
+        this.peliculasEliminadas.push(pelicula);
+        this.peliculas = this.peliculas.filter(
+          pelicula => !this.peliculasEliminadas.some(eliminada => eliminada.id === pelicula.id)
+        );
+        this.dataSource.data = this.peliculas;
+      }
+    });
+
+  }
+
+}
+
+```
+
+
+Componente Angular para gestionar una tabla interactiva de películas, integrando funcionalidades de búsqueda, paginación, ordenamiento, y acciones como editar, eliminar y ver detalles.
+
+### ✨ Características
+- **Búsqueda**: Filtra películas por nombre utilizando un input.
+- **Paginar y Ordenar**: Implementado con `MatPaginator` y `MatSort`.
+- **Acciones**:
+  - `masDetalles`: Abre un modal para mostrar detalles de una película.
+  - `editar`: Permite editar los datos de una película.
+  - `eliminar`: Confirma y elimina una película de la lista con `SweetAlert2`.
+
+### 🧩 Código Principal
+- **Métodos Clave**:
+  - `obtenerPeliculas()`: Consume la API de TMDb para obtener películas en cartelera.
+  - `applyFilter()`: Aplica el filtro de búsqueda en la tabla.
+  - `eliminar(pelicula)`: Elimina una película, actualizando el `dataSource`.
+
+- **Uso de Servicios**:
+  - `PeliculaService`: Para obtener datos desde la API de TMDb.
+
+
+
+## Lista de Películas - Interfaz Angular Material
+
+``` HTML
+<div class="container">
+    <h2>Lista de Peliculas</h2>
+    <mat-form-field appearance="outline">
+      <mat-label>Filtro</mat-label>
+      <input matInput (keyup)="applyFilter($event)" placeholder="Ingrese su busqueda" #input >
+    </mat-form-field>
+  
+    <div class="mat-elevation-z8">
+      <table mat-table [dataSource]="dataSource" class="table-striped table-bordered " matSort>
+        <!-- Position Column -->
+        <ng-container matColumnDef="numero">
+            <th mat-header-cell *matHeaderCellDef>No</th>
+            <td mat-cell *matCellDef="let movie; let i = index">
+              {{ i + 1 + (paginator.pageIndex * paginator.pageSize) }}
+            </td>
+          </ng-container>
+  
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+          <td mat-cell *matCellDef="let movie">{{ movie.titulo }}</td>
+        </ng-container>
+  
+        <!-- Name Column -->
+        <ng-container matColumnDef="poster">
+          <th mat-header-cell *matHeaderCellDef>Poster</th>
+          <td mat-cell *matCellDef="let movie">
+            <img [src]="'https://image.tmdb.org/t/p/w500' + movie.imagenPoster" alt="{{ movie.titulo }}" style="height: 100px; width: auto;">
+          </td>
+        </ng-container>
+  
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="accion">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let movie" class="acciones-cell">
+            <button mat-icon-button color="primary" (click)="masDetalles(movie)" class="boton-accion">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" (click)="editar(movie)" class="boton-accion">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="eliminar(movie)" class="boton-accion">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+          
+  
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+  
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 20]"
+        showFirstLastButtons
+        aria-label="Select page of periodic movies"
+      >
+      </mat-paginator>
+    </div>
+  </div>
+```
+
+Este componente presenta una tabla interactiva para mostrar una lista de películas utilizando Angular Material. Incluye funcionalidades como filtros, paginación, ordenamiento y acciones para cada elemento.
+
+### ✨ Características
+- **Búsqueda**: Campo de texto para filtrar películas por nombre.
+- **Ordenamiento**: Ordena las columnas utilizando el encabezado interactivo.
+- **Paginar**: Control de paginación con opciones configurables de tamaño de página.
+- **Acciones**: Botones para realizar acciones (ver detalles, editar, eliminar) en cada película.
+
+### 🧩 Estructura del Código
+- **Campo de Búsqueda**:  
+  Usa un `<mat-form-field>` con un input que activa el método `applyFilter()` al presionar una tecla.
+  
+- **Tabla**:  
+  Implementada con `<table mat-table>` que utiliza las siguientes columnas:
+  - **`numero`**: Índice calculado dinámicamente.
+  - **`nombre`**: Nombre de la película.
+  - **`poster`**: Imagen de la película.
+  - **`accion`**: Botones para acciones específicas.
+
+- **Paginador**:  
+  Configurado con `<mat-paginator>` para navegación entre páginas.
+
+
+
+## Dashboard de la Aplicación con Angular Material
+
+``` Typescript
+import { Component, inject, OnInit } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import Swal from 'sweetalert2';
+import { MatMenuModule } from '@angular/material/menu';
+import { UsuarioLoggedService } from '../services/usuario-logged.service';
+import { Usuario } from '../models/usuario';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIcon } from '@angular/material/icon';
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [
+    MatToolbarModule,
+    MatButtonModule,
+    MatCardModule,
+    RouterOutlet,
+    MatButtonModule, 
+    MatDialogModule,
+    RouterLink,
+    MatMenuModule,
+    MatSidenavModule,
+    MatIcon
+  ],
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css'
+})
+export class DashboardComponent implements OnInit{
+
+  showFiller = false;
+  usuario: Usuario | null;
+
+  constructor(private router: Router, 
+    public logeadoService: UsuarioLoggedService
+  ){}
+
+  ngOnInit(): void {
+    console.log(this.logeadoService.getUsuario()?.avatar);
+    this.usuario = this.logeadoService.getUsuario();
+  }
+
+  salir(){
+
+    Swal.fire({
+      title: "¿Estas seguro de salir?",
+      text: "Se cerrara la session",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Si, Salir",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Se ha cerrado la sesion!",
+          text: "Session cerrada.",
+          icon: "success"
+        });
+        this.logeadoService.clearUsuario();
+        this.router.navigate(['login']);
+      }
+    });
+
+    
+  }
+
+}
+
+```
+
+El componente `DashboardComponent` proporciona la estructura principal para el panel de control de la aplicación. Incluye una barra de herramientas, un menú lateral y funcionalidades relacionadas con la sesión del usuario.
+
+### ✨ Características
+- **Visualización del Usuario**:
+  - Muestra información del usuario logeado, como el avatar y el nombre.
+
+- **Acción de Cerrar Sesión**:
+  - Confirma la acción mediante un cuadro de diálogo utilizando **SweetAlert2**.
+  - Borra los datos del usuario del servicio `UsuarioLoggedService` y redirige a la página de inicio de sesión.
+
+- **Navegación Dinámica**:
+  - Utiliza `Router` para manejar la navegación entre vistas.
+  - Soporta rutas declaradas mediante `RouterLink`.
+
+### 📄 Descripción de Funcionalidades
+1. **Inicialización (`ngOnInit`)**:
+   - Obtiene el usuario logeado desde el servicio `UsuarioLoggedService` y carga su información.
+   - Imprime la URL del avatar en la consola para depuración.
+
+2. **Cerrar Sesión (`salir`)**:
+   - Solicita confirmación al usuario para cerrar la sesión.
+   - Si se confirma, muestra una alerta de éxito, limpia la información del usuario y redirige al componente de inicio de sesión.
+
+3. **Barra de Herramientas y Menú Lateral**:
+   - Utiliza Angular Material para crear un diseño visualmente atractivo y funcional.
+   - Implementa un botón que abre o cierra el menú lateral.
+
+
+
+## Menú de Navegación con Angular Material
+
+``` HTML
+<div class="container">
+  <mat-toolbar color="primary" class="fixed-toolbar">
+    <button mat-icon-button (click)="drawer.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span>Inicio</span>
+    <span class="spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu" class="avatar-button">
+      <img
+        alt="avatar"
+        [src]="logeadoService.getUsuario()?.avatar || 'assets/default-avatar.png'"
+        class="avatar"
+      />
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="salir()">Salir</button>
+    </mat-menu>
+  </mat-toolbar>
+
+  <mat-drawer-container class="drawer-container">
+    <mat-drawer #drawer class="example-sidenav" mode="side">
+      <div class="welcome-section">
+        <p class="welcome-message">
+          Bienvenido, <span>{{ logeadoService.getUsuario()?.name }}</span>
+        </p>
+      </div>
+      <p>Menú</p>
+      <button mat-button routerLink="usuarios">Usuarios</button>
+      <button mat-button routerLink="peliculas">Películas</button>
+      <button mat-button (click)="salir()">Salir</button>
+    </mat-drawer>
+
+    <mat-drawer-content>
+      <div class="example-sidenav-content">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-drawer-content>
+  </mat-drawer-container>
 </div>
 
-- HttpClient: Es un servicio que permite realizar solicitudes HTTP (GET, POST, PUT, DELETE, etc.) desde tu aplicación Angular.
-
-- Injectable: Marca esta clase como un servicio que puede ser inyectado en otros componentes o servicios de Angular mediante el sistema de Inyección de Dependencias. Al declararlo con providedIn: 'root', Angular se encarga de instanciar este servicio como un singleton (única instancia para toda la app).
-
-- Observable: Forma parte de rxjs (Reactive Extensions for JavaScript) y es el patrón que Angular usa para manejar flujos de datos asincrónicos, como las respuestas HTTP.
-
-- urlBase: Define la URL base de la API que se consumirá. Es una buena práctica usar variables para las URLs en lugar de hardcodearlas en cada método.
-
-1. Firma del método:
-    - Devuelve un Observable<Usuario[]>, lo que significa que este método no retorna los datos inmediatamente, sino que proporciona un stream que emite los datos cuando están disponibles.
-    - El tipo Usuario[] indica que se espera una respuesta en forma de un array de objetos del tipo Usuario.
-
-2. Llamada HTTP:
-    - this.clienteHttp.get<Usuario[]>(this.urlBase):
-    Usa el método get del servicio HttpClient para realizar una solicitud HTTP GET a la API.
-    - El tipo genérico <Usuario[]> le indica a TypeScript qué tipo de datos espera de la respuesta (un array de usuarios).
-    - this.urlBase: La URL a la que se envía la solicitud.
-
-3. Retorno:
-    - return: Devuelve el observable generado por HttpClient. Este observable puede ser suscrito por cualquier componente o servicio que necesite usar los datos.
+```
 
 
-## Agregar HttpClientModule
-<div align='center'>
-    <img  src="src/assets/img-reporte/img2.png" width="50%">
-    <p>Agregacion de HttpClientModule para realizar peticiones HTTP</p>
-</div>
+Este código implementa un menú lateral (drawer) y una barra superior fija utilizando Angular Material. Proporciona una interfaz de navegación clara y funcional para una aplicación web.
 
-1. Explicación del provideHttpClient
-    - provideHttpClient(withFetch()): Configura HttpClient para usar la API Fetch. Esto puede ser útil para aprovechar las capacidades modernas de Fetch API, como mejores promesas y soporte para streams.
-    - provideHttpClient(): Simplemente proporciona HttpClient sin ninguna configuración adicional.
-    - Ambos se aseguran de que HttpClient esté disponible en toda tu aplicación, permitiéndote hacer solicitudes HTTP desde tus servicios.
+### ✨ Características
+- **Barra Superior (`mat-toolbar`)**:
+  - Botón para abrir/cerrar el menú lateral.
+  - Muestra un avatar del usuario (dinámico) obtenido del servicio `logeadoService`.
+  - Incluye un menú desplegable para acciones adicionales (como "Salir").
 
-## Consumir el servicio en un Componente
-<div align='center'>
-    <img  src="src/assets/img-reporte/img3.png" width="50%">
-    <p>Metodo para consumir el servicio</p>
-</div>
+- **Menú Lateral (`mat-drawer`)**:
+  - Contiene un mensaje de bienvenida personalizado.
+  - Botones para navegar entre módulos (`Usuarios`, `Películas`) utilizando `routerLink`.
+  - Opción para cerrar sesión.
 
-- En el código se muestra cómo un componente en Angular utiliza el servicio para consumir una API y manejar los datos obtenidos.
+- **Área de Contenido (`mat-drawer-content`)**:
+  - Renderiza vistas dinámicamente con `router-outlet`.
 
-1. ngOnInit
-    - ngOnInit(): Método del ciclo de vida del componente que se ejecuta automáticamente después de que Angular ha inicializado el componente.
-    - Dentro de ngOnInit, se llama al método obtenerUsuarios para cargar los datos cuando el componente se inicializa.
+### 📄 Estructura Principal
+- **Toolbar Superior**:
+  - **Botón Menú**: Abre o cierra el menú lateral.
+  - **Avatar**: Muestra el avatar del usuario logeado.
+  - **Menú Desplegable**: Acción de cerrar sesión.
 
-2. subscribe
-    - subscribe: Escucha las respuestas del observable.
-        - next: Se ejecuta si la solicitud es exitosa.
-            - Asigna los datos obtenidos (datos) a las propiedades:
-                - this.usuarios: Almacena los usuarios obtenidos.
-                - this.dataSource.data: Si se está utilizando una tabla (como Angular Material), actualiza los datos para mostrar en el frontend.
-        - error: Maneja errores si la solicitud falla.
+- **Menú Lateral**:
+  - Botones de navegación.
+  - Mensaje de bienvenida dinámico basado en el nombre del usuario.
 
-## Preguntas
-
-¿Qué hace el método getUsers en este servicio?
-Consume el api y regresa una Observable que contiene un arreglo de datos
-
-¿Por qué es necesario importar HttpClientModule?
-HttpClientModule es necesario en Angular para habilitar el uso de HttpClient, que permite realizar peticiones HTTP a APIs y servidores externos en la aplicación.
-
-¿Qué función cumple el método ngOnInit en el componente UserListComponent?
-El método ngOnInit se utiliza para inicializar el componente y es el lugar ideal para cargar datos o llamar servicios cuando el componente se muestra por primera vez en la vista.
-
-¿Para qué sirve el bucle *ngFor en Angular?
-El bucle *ngFor en Angular permite iterar sobre una lista de elementos y renderizarlos en la plantilla del componente, mostrando cada elemento de forma dinámica en la vista.
-
-¿Qué ventajas tiene el uso de servicios en Angular para el consumo de APIs?
-Los servicios centralizan la lógica de consumo de datos, permitiendo que los componentes se enfoquen en la presentación. Facilitan la reutilización del código, la inyección de dependencias y las pruebas, mejorando la estructura y mantenimiento de la aplicación.
-
-¿Por qué es importante separar la lógica de negocio de la lógica de presentación?
-Separar estas lógicas permite que los componentes sean más manejables y modulares, facilitando cambios en la interfaz sin afectar la lógica de negocio y manteniendo el código más claro y escalable.
-
-¿Qué otros tipos de datos o APIs podrías integrar en un proyecto como este?
-Podrías añadir APIs de autenticación, geolocalización, pagos, redes sociales o análisis. Estas integraciones aportan funciones adicionales que enriquecen la experiencia del usuario y amplían las capacidades del proyecto.
+- **Contenido Principal**:
+  - Área donde se renderizan las rutas de la aplicación.
 
 
-# Ejercicio Login - Consumir APIS de terceros
-
-Para este ejercicio se continuara consumiendo la API anteriormente mencionada: https://api.escuelajs.co/api/v1/users
+# Imagenes de la Interfaz
 
 <div align='center'>
     <img  src="src/assets/img-reporte/img1.png" width="80%">
-    <p>Servicio para consumir el API</p>
+    <p>Interfaz para el inicio de sesion</p>
 </div>
 
 <div align='center'>
-    <img  src="src/assets/img-reporte/img1.png" width="80%">
-    <p>Agregacion de HttpClientModule para realizar peticiones HTTP</p>
+    <img  src="src/assets/img-reporte/img2.png" width="80%">
+    <p>Tabla de Peliculas actuales en cartelera</p>
 </div>
 
 <div align='center'>
-    <img  src="src/assets/img-reporte/img1.png" width="80%">
-    <p>Metodo para consumir el servicio</p>
+    <img  src="src/assets/img-reporte/img3.png" width="80%">
+    <p>Modal para poder observar los detalles de la pelicula</p>
 </div>
-
-## Componente Login
-
-### Html necesario en el formulario de Login
 
 <div align='center'>
     <img  src="src/assets/img-reporte/img4.png" width="80%">
-    <p>Metodo para consumir el servicio</p>
+    <p>Modal para poder editar los detalles de la pelicula</p>
 </div>
-
-Este código es una estructura de HTML con Angular Material para crear un formulario de inicio de sesión con diseño dividido en dos secciones: una izquierda y otra derecha.
-
-1. Contenedor principal:
-    - div class="login-container": Es el contenedor principal que incluye dos secciones:
-        - izquierdo: para una imagen.
-        - derecho: Contiene el formulario de inicio de sesión.
-2. Tarjeta del formulario:
-    - Usa un mat-card para organizar visualmente el formulario.
-    - mat-card-header: Incluye un título "Iniciar Sesión".
-3. Formulario:
-    - form: Está vinculado al formulario reactivo loginForm de Angular a través de [formGroup].
-    - (ngSubmit)="onSubmit()": Llama al método onSubmit() cuando se envía el formulario.
-3. Campos de entrada:
-    - Correo:
-        - Usa un campo de entrada con Angular Material (mat-form-field).
-        - Vinculado al control email del formulario reactivo (formControlName="email").
-    - Contraseña:
-        - Campo de entrada similar, vinculado al control password.
-5. Botón de envío:
-    - Botón de tipo submit con estilo de Angular Material (mat-raised-button).
-    - Deshabilitado si el formulario es inválido ([disabled]="loginForm.invalid").
-
-### Codigo para validar las credenciales ingresadas
 
 <div align='center'>
     <img  src="src/assets/img-reporte/img5.png" width="80%">
-    <p>Metodo para consumir el servicio</p>
+    <p>Tabla de Usuarios que pueden ingresar</p>
 </div>
-
-Este código define la lógica para manejar el inicio de sesión en una aplicación.
-
-1. Validación del formulario:
-    - Comprueba si el formulario de inicio de sesión (loginForm) es válido usando this.loginForm.valid.
-    - Si es válido, extrae los valores de email y password del formulario.
-2. Verificación de credenciales:
-    - Itera sobre la lista de usuarios (this.usuarios) para comprobar si existe un usuario con un correo (email) y contraseña (password) que coincidan.
-    - Si encuentra una coincidencia:
-        - Establece entrada = true y detiene la búsqueda.
-3. Manejo de resultados:
-    - Si las credenciales son correctas (entrada === true):
-        - Muestra un mensaje de éxito con SweetAlert2.
-        - Redirige al usuario al dashboard usando this.router.navigate(['dashboard']) después de confirmar el mensaje.
-    - Si las credenciales son incorrectas:
-        - Muestra un mensaje de error con SweetAlert2 indicando que los datos son incorrectos.
-
-## Resultado Final de la Vista Login 
-<div align='center'>
-    <img  src="src/assets/img-reporte/img6.png" width="80%">
-    <p>Interfaz de Inicio de Sesion</p>
-</div>
-
-## Notificaciones 
-
-Se utilizo SweetAlert2: https://sweetalert2.github.io/#download
-
-### Notificacion de error al ingresar
-
-<div align='center'>
-    <img  src="src/assets/img-reporte/img7.png" width="80%">
-    <p>Mensaje de Error</p>
-</div>
-
-### Notificacion de exito al ingresar
-
-<div align='center'>
-    <img  src="src/assets/img-reporte/img8.png" width="80%">
-    <p>Mensaje de Exito</p>
-</div>
-
-
-## Ventana mostrada despues de iniciar sesion 
-<div align='center'>
-    <img  src="src/assets/img-reporte/img9.png" width="80%">
-    <p>Ventana de Inicio</p>
-</div>
-En esta ventana se listan los usuarios que se encuentran en la API. 
-
-
-

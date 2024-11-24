@@ -64,18 +64,6 @@ export class TablaPeliculasComponent implements OnInit, AfterViewInit {
     });
   }
 
-  actualizarContenido(){
-    console.log('actualizar contenido')
-    this.peliculasEliminadas = this.localService.getList('peliculas-eliminadas');
-    console.log(this.peliculasEliminadas)
-    this.peliculas = this.peliculas.filter(
-      pelicula => !this.peliculasEliminadas.some(eliminada => eliminada.id === pelicula.id)
-    );
-    this.dataSource.data = this.peliculas;
-    
-    console.log(this.peliculas)
-  }
-
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
@@ -141,11 +129,6 @@ export class TablaPeliculasComponent implements OnInit, AfterViewInit {
           pelicula => !this.peliculasEliminadas.some(eliminada => eliminada.id === pelicula.id)
         );
         this.dataSource.data = this.peliculas;
-        // this.localService.removeList('peliculas-eliminadas');
-        // this.localService.saveList('peliculas-eliminadas', this.peliculasEliminadas);
-        // console.log(this.peliculasEliminadas)
-        // this.actualizarContenido();
-
       }
     });
 
